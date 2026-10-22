@@ -4,84 +4,75 @@ namespace sportverseny
 {
     internal class Program
     {
-        static (long kovegso, long kevegso, long fovegso, long maradekvegso) bruteforce(long n) 
+        static (long kovegso, long kevegso, long fovegso, long maradekvegso) bruteforce(long n)
         {
-            long ko = 0;
-            long ke = 0;
-            long fo = 0;
-            long maradek = 0;
-            
             long kovegso = 0;
             long kevegso = 0;
             long fovegso = 0;
-            long maradekvegso = 999999999999999999;
-
-            int alap = 3;
-            int masodikalap = 3;
-            int lépés = 3;
-            
-            int szamlalo=0;
-            
-            bool talalt = false;
-            bool talaltalltime = false;
+            long maradekvegso = n;
 
             const int ko_letszam = 5;
             const int ke_letszam = 7;
             const int fo_letszam = 11;
-            for (int i = 0; i<=alap; i++) {
-                ko = 0;
-                for (; ko <= alap; ko++)
+            bool boolread = false;
+
+            if (n < 25)
+            {
+                cache(n);
+                return 
+                    // ez itt nem lesz jo, mainben kell ifelni csak mar nincs idom ezt megcsinalni, lenyeg az hogy mainben if 25 ha nem akkor bruteforce ha igen akkor cache, otthon felepitem a cachet, most meg commit es push
+            }
+
+            for (long ko = 0; ko <= n / ko_letszam; ko++)
+            {
+                for (long ke = 0; ke <= (n - ko * ko_letszam) / ke_letszam; ke++)
                 {
-                    ke = 0;
-                    
-                    for (; ke <= alap; ke++)
+                    for (long fo = 0; fo <= (n - ko * ko_letszam - ke * ke_letszam) / fo_letszam; fo++)
                     {
-                        fo = 0;
-                        for (; fo <= alap; fo++)
+                        
+                        long maradek = n - (ko * ko_letszam + ke * ke_letszam + fo * fo_letszam);
+                        //Console.WriteLine($"{ko} {ke} {fo} {maradek}");
+
+                        if (maradek < maradekvegso || (ko + ke + fo > kovegso + kevegso + fovegso && maradek == maradekvegso))
                         {
-                            Console.WriteLine($"{ko} {ke} {fo} maradék: {Math.Abs(maradek = n-(ko*ko_letszam+ ke * ke_letszam+ fo * fo_letszam))}");
-                            if (Math.Abs(maradek) < maradekvegso || (Math.Abs(maradek) == maradekvegso && ko + ke + fo < kovegso + kevegso + fovegso))
-                            {
-                                maradek = Math.Abs(n - (ko * ko_letszam + ke * ke_letszam + fo * fo_letszam));
-                                kovegso = ko;
-                                kevegso = ke;
-                                fovegso = fo;
-                                maradekvegso = maradek;
-                                Console.WriteLine($"Uj legjobb ertek + {kovegso} + {kevegso} + {fovegso} + {maradekvegso}");
-                                talalt = true;
-                                talaltalltime = true;
-                                szamlalo = i;
-                            }
-                            else
-                            {
-                                talalt = false;
-                            }
+                            kovegso = ko;
+                            kevegso = ke;
+                            fovegso = fo;
+                            maradekvegso = maradek;
                         }
                     }
                 }
             }
-            Thread.Sleep(1000);
-            while (true)
-            {
-                if (szamlalo<=3)
+            return (kovegso, kevegso, fovegso, maradekvegso);
+        }
+
+        static (long kovegso, long kevegso, long fovegso, long maradekvegso) cache(long n)
+        {
+            var dictionary = new Dictionary<long, long>();
+            using (var read = File.ReadLinesAsync("dictionary.txt").GetAsyncEnumerator(){
+                boolread = true;
+                for (int i = 0; boolread; i++)
                 {
-                    alap += lépés;
-                    szamlalo+=lépés;
-                }
-                else
-                {   
-                    return (kovegso,kevegso,fovegso,maradekvegso);
+                    if (!read.MoveNextAsync)
+                    {
+                        continue;
+                    }
+                    string[] kv = read.Current.Split(":");
+                    if (kv.Length == 2)
+                    {
+                        dictionary.Add(kv[0], kv[1]);
+                    }
                 }
             }
         }
+
         static void Main(string[] args)
         {
             Console.WriteLine("Mi legyen az N szám?");
             long n = Convert.ToInt64(Console.ReadLine());
-            
-            
+
             var (ko, ke, fo, maradek) = bruteforce(n);
-            
+
             Console.WriteLine($"{ko} {ke} {fo} {maradek}");
         }
     }
